@@ -26,15 +26,20 @@ class ImageProvider implements AvatarProviderInterface
         $image = $author->getImage();
         if ($image instanceof FileReference) {
             $defaultSize = 32;
-            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
 
+            /** @var ObjectManager $objectManager */
+            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+            /** @var ConfigurationManagerInterface $configurationManager */
             $configurationManager = $objectManager->get(ConfigurationManagerInterface::class);
+
             $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
             $size = ($settings['authors']['avatar']['provider']['size'] ?? $defaultSize) ?: $defaultSize;
 
+            /** @var ImageService $imageService */
             $imageService = $objectManager->get(ImageService::class);
             $image = $imageService->getImage('', $image, false);
 
+            $cropString = '';
             if ($image->hasProperty('crop') && $image->getProperty('crop')) {
                 $cropString = $image->getProperty('crop');
             }

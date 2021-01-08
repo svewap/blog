@@ -23,7 +23,7 @@ abstract class AbstractNotification implements NotificationInterface
     protected $message;
 
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $data;
 
@@ -31,7 +31,7 @@ abstract class AbstractNotification implements NotificationInterface
      * AbstractNotification constructor.
      * @param string $title
      * @param string $message
-     * @param array $data
+     * @param array<string,mixed> $data
      */
     public function __construct(string $title = '', string $message = '', array $data = [])
     {
@@ -77,7 +77,7 @@ abstract class AbstractNotification implements NotificationInterface
     }
 
     /**
-     * @return array
+     * @return array<string,mixed>
      */
     public function getData(): array
     {
@@ -85,7 +85,7 @@ abstract class AbstractNotification implements NotificationInterface
     }
 
     /**
-     * @param array $data
+     * @param array<string,mixed> $data
      * @return AbstractNotification
      */
     public function setData(array $data): self

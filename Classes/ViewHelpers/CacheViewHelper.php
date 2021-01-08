@@ -26,7 +26,7 @@ class CacheViewHelper extends AbstractViewHelper
     /**
      * Render
      *
-     * @param array $arguments
+     * @param array<string,mixed> $arguments
      * @param \Closure $renderChildrenClosure
      * @param RenderingContextInterface $renderingContext
      * @return mixed|string
@@ -36,6 +36,8 @@ class CacheViewHelper extends AbstractViewHelper
     public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext)
     {
         $post = $arguments['post'];
-        GeneralUtility::makeInstance(CacheService::class)->addTagsForPost($post);
+        /** @var CacheService $cacheService */
+        $cacheService = GeneralUtility::makeInstance(CacheService::class);
+        $cacheService->addTagsForPost($post);
     }
 }

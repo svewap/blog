@@ -14,11 +14,13 @@ use T3G\AgencyPack\Blog\Constants;
 use T3G\AgencyPack\Blog\Domain\Model\Comment;
 use T3G\AgencyPack\Blog\Domain\Model\Post;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
 class CommentRepository extends Repository
@@ -29,7 +31,7 @@ class CommentRepository extends Repository
     protected $configurationManager;
 
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $settings;
 
@@ -38,9 +40,12 @@ class CommentRepository extends Repository
      */
     public function initializeObject(): void
     {
-        $this->configurationManager = $this->objectManager->get(ConfigurationManagerInterface::class);
+        /** @var ConfigurationManagerInterface $configurationManager **/
+        $configurationManager = $this->objectManager->get(ConfigurationManagerInterface::class);
+        $this->configurationManager = $configurationManager;
         $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
 
+        /** @var Typo3QuerySettings $querySettings **/
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
         // don't add the pid constraint
         $querySettings->setRespectStoragePage(false);
@@ -53,11 +58,11 @@ class CommentRepository extends Repository
 
     /**
      * @param Post $post
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findAllByPost(Post $post)
+    public function findAllByPost(Post $post): QueryResultInterface
     {
         $query = $this->createQuery();
         $constraints = [];
@@ -69,12 +74,13 @@ class CommentRepository extends Repository
     /**
      * @param string $filter
      * @param int $blogSetup
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findAllByFilter(string $filter = null, int $blogSetup = null)
+    public function findAllByFilter(string $filter = null, int $blogSetup = null): QueryResultInterface
     {
         $query = $this->createQuery();
+        /** @var Typo3QuerySettings $querySettings **/
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
         $querySettings->setRespectStoragePage(false);
         $query->setQuerySettings($querySettings);
@@ -112,11 +118,11 @@ class CommentRepository extends Repository
     /**
      * @param int $limit
      * @param int $blogSetup
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findActiveComments(int $limit = null, int $blogSetup = null)
+    public function findActiveComments(int $limit = null, int $blogSetup = null): QueryResultInterface
     {
         $query = $this->createQuery();
 
@@ -141,8 +147,9 @@ class CommentRepository extends Repository
      */
     protected function getPostPidsByRootPid(int $blogRootPid): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('pages');
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
         $rows = $queryBuilder
             ->select('uid')
             ->from('pages')
@@ -160,7 +167,7 @@ class CommentRepository extends Repository
 
     /**
      * @param QueryInterface $query
-     * @param array $constraints
+     * @param array<string,mixed> $constraints
      * @return array
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
@@ -180,9 +187,12 @@ class CommentRepository extends Repository
             ? (int)$this->settings['comments']['respectPostLanguageId']
             : 0;
         if ($respectPostLanguageId) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /** @var Context $context */
+            $context = GeneralUtility::makeInstance(Context::class);
+            /** @var LanguageAspect $languageAspect */
+            $languageAspect = $context->getAspect('language');
             $constraints[] = $query->logicalOr([
-                $query->equals('postLanguageId', GeneralUtility::makeInstance(Context::class)->getAspect('language')->getId()),
+                $query->equals('postLanguageId', $languageAspect->getId()),
                 $query->equals('postLanguageId', -1),
             ]);
         }

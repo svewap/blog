@@ -63,6 +63,9 @@ jobs:
       - name: Lint PHP
         run: composer t3g:test:php:lint
 
+      - name: PHPStan
+        run: composer t3g:phpstan:github
+
       - name: Unit Tests without coverage
         if: matrix.typo3 != '^10.4'
         run: composer t3g:test:php:unit

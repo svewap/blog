@@ -21,7 +21,6 @@ use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 class AuthorNotificationProcessor implements ProcessorInterface
 {
-
     /**
      * Process the notification
      *
@@ -45,21 +44,24 @@ class AuthorNotificationProcessor implements ProcessorInterface
     {
         $notificationId = $notification->getNotificationId();
 
-        $settings = GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(ConfigurationManagerInterface::class)
-            ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var ConfigurationManagerInterface $configurationManager */
+        $configurationManager = $objectManager->get(ConfigurationManagerInterface::class);
+        $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
 
         /** @var Post $post */
         $post = $notification->getData()['post'];
         if ((int)$settings['notifications'][$notificationId]['author'] === 1) {
             /** @var Author $author */
             foreach ($post->getAuthors() as $author) {
+                /** @var MailMessage $mail */
                 $mail = GeneralUtility::makeInstance(MailMessage::class);
                 $mail
                     ->setSubject($notification->getTitle())
-                    ->setBody($notification->getMessage(), 'text/html')
-                    ->setFrom([$settings['notifications']['email']['senderMail'] => $settings['notifications']['email']['senderName']])
-                    ->setTo([$author->getEmail()])
+                    ->setBody($notification->getMessage())
+                    ->setFrom([(string)$settings['notifications']['email']['senderMail'] => (string)$settings['notifications']['email']['senderName']])
+                    ->setTo([(string)$author->getEmail()])
                     ->send();
             }
         }

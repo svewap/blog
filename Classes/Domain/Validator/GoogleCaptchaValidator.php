@@ -25,9 +25,11 @@ class GoogleCaptchaValidator extends AbstractValidator
     {
         $action = 'form';
         $controller = 'Comment';
-        $settings = GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(ConfigurationManagerInterface::class)
-            ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var ConfigurationManagerInterface $configurationManager */
+        $configurationManager = $objectManager->get(ConfigurationManagerInterface::class);
+        $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK, 'blog');
         $requestData = GeneralUtility::_GPmerged('tx_blog_commentform');
 
         if (
@@ -48,8 +50,10 @@ class GoogleCaptchaValidator extends AbstractValidator
                     'remoteip' => GeneralUtility::getIndpEnv('REMOTE_ADDR')
                 ]
             ];
-            $response = GeneralUtility::makeInstance(RequestFactory::class)
-                ->request('https://www.google.com/recaptcha/api/siteverify', 'POST', $additionalOptions);
+
+            /** @var RequestFactory $requestFactory */
+            $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
+            $response = $requestFactory->request('https://www.google.com/recaptcha/api/siteverify', 'POST', $additionalOptions);
             if ($response->getStatusCode() === 200) {
                 $result = json_decode($response->getBody()->getContents());
                 if (!$result->success) {

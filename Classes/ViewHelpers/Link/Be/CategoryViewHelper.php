@@ -27,7 +27,6 @@ class CategoryViewHelper extends AbstractTagBasedViewHelper
      * Arguments initialization.
      *
      * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
      */
     public function initializeArguments(): void
     {
@@ -53,12 +52,13 @@ class CategoryViewHelper extends AbstractTagBasedViewHelper
         $category = $this->arguments['category'];
         $categoryUid = (int)$category->getUid();
 
+        /** @var UriBuilder $routingUriBuilder */
         $routingUriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         $uri = $routingUriBuilder->buildUriFromRoute('record_edit', ['edit[sys_category][' . $categoryUid . ']' => 'edit']);
         $arguments = GeneralUtility::_GET();
         $route = $arguments['route'];
         unset($arguments['route'], $arguments['token']);
-        $uri .= '&returnUrl=' . rawurlencode((string)GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoutePath($route, $arguments));
+        $uri .= '&returnUrl=' . rawurlencode((string)$routingUriBuilder->buildUriFromRoutePath($route, $arguments));
         if ($uri !== '') {
             if ($this->arguments['returnUri']) {
                 return $uri;

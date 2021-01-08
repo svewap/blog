@@ -20,3 +20,6 @@ indent_size = 2
 [*.rst]
 indent_style = space
 indent_size = 3
+
+[*.neon]
+indent_style = tab

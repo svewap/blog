@@ -32,7 +32,7 @@ class Nl2pViewHelper extends AbstractViewHelper
     }
 
     /**
-     * @param array $arguments
+     * @param array<string,mixed> $arguments
      * @param \Closure $renderChildrenClosure
      * @param \TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface $renderingContext
      * @return string

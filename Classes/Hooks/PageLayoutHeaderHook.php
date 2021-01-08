@@ -31,21 +31,25 @@ class PageLayoutHeaderHook
         $pageInfo = BackendUtility::readPageAccess($pageUid, $GLOBALS['BE_USER']->getPagePermsClause(Permission::PAGE_SHOW));
 
         // Early exit for non-blog pages
-        if ($pageInfo['doktype'] !== Constants::DOKTYPE_BLOG_POST) {
+        if ($pageInfo === false || $pageInfo['doktype'] !== Constants::DOKTYPE_BLOG_POST) {
             return '';
         }
 
+        /** @var PageRenderer $pageRenderer */
         $pageRenderer = GeneralUtility::makeInstance(PageRenderer::class);
         $pageRenderer->addCssFile('EXT:blog/Resources/Public/Css/pagelayout.min.css', 'stylesheet', 'all', '', false);
-
+        /** @var ObjectManager $objectManager */
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var PostRepository $repository */
         $repository = $objectManager->get(PostRepository::class);
+
         $query = $repository->createQuery();
         $querySettings = $query->getQuerySettings();
         $querySettings->setIgnoreEnableFields(true);
         $repository->setDefaultQuerySettings($querySettings);
         $post = $repository->findByUidRespectQuerySettings($pageUid);
 
+        /** @var StandaloneView $view */
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $view->getRenderingContext()->getTemplatePaths()->fillDefaultsByPackageName('blog');
         $view->setTemplate('PageLayout/Header');

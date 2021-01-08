@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
 class CategoryRepository extends Repository
@@ -28,8 +29,11 @@ class CategoryRepository extends Repository
     {
         // @TODO: It looks like extbase ignore storage settings for sys_category.
         // @TODO: this hack set the storage handling for sys_category table.
+
+        /** @var ConfigurationManagerInterface $configurationManager */
         $configurationManager = $this->objectManager->get(ConfigurationManagerInterface::class);
         $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
+        /** @var Typo3QuerySettings $querySettings */
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
         $querySettings->setRespectStoragePage(true);
         $querySettings->setStoragePageIds(GeneralUtility::trimExplode(',', $settings['storagePid']));
@@ -44,14 +48,15 @@ class CategoryRepository extends Repository
      * @param string $table
      * @param int $uid
      * @param string $field
-     * @return array|null|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return null|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function getByReference($table, $uid, $field = 'categories')
+    public function getByReference($table, $uid, $field = 'categories'): ?QueryResultInterface
     {
+        /** @var ConnectionPool $connectionPool */
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-
-        $queryBuilder = $connectionPool->getConnectionForTable('sys_category_record_mm')->createQueryBuilder();
+        $queryBuilder = $connectionPool->getConnectionForTable('sys_category_record_mm')
+            ->createQueryBuilder();
         $queryBuilder
             ->select('uid_local')
             ->from('sys_category_record_mm')
@@ -71,11 +76,9 @@ class CategoryRepository extends Repository
             $conditions = [];
             $conditions[] = $query->in('uid', $categories);
 
-            return $query->matching(
-                $query->logicalAnd(
-                    $conditions
-                )
-            )->execute();
+            /** @var QueryResultInterface $result */
+            $result = $query->matching($query->logicalAnd($conditions))->execute();
+            return $result;
         }
 
         return null;

@@ -20,7 +20,7 @@ class MailContent
 
     /**
      * @param string $template
-     * @param array $arguments
+     * @param array<string,mixed> $arguments
      *
      * @return string
      * @throws \RuntimeException
@@ -48,10 +48,13 @@ class MailContent
      */
     protected function getFluidTemplateObject($template) : StandaloneView
     {
+        /** @var ObjectManager $objectManager */
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        $settings = $objectManager
-            ->get(ConfigurationManagerInterface::class)
-            ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK, 'blog');
+        /** @var ConfigurationManagerInterface $configurationManager */
+        $configurationManager = $objectManager->get(ConfigurationManagerInterface::class);
+        $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK, 'blog');
+
+        /** @var StandaloneView $view */
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $view->setLayoutRootPaths($settings['view']['emails']['layoutRootPaths']);
         $view->setPartialRootPaths($settings['view']['emails']['partialRootPaths']);

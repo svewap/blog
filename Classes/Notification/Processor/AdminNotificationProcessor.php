@@ -41,12 +41,16 @@ class AdminNotificationProcessor implements ProcessorInterface
     protected function processCommentAddNotification(NotificationInterface $notification): void
     {
         $notificationId = $notification->getNotificationId();
-        $settings = GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(ConfigurationManagerInterface::class)
-            ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
+
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var ConfigurationManagerInterface $configurationManager */
+        $configurationManager = $objectManager->get(ConfigurationManagerInterface::class);
+        $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
 
         if ((int)$settings['notifications'][$notificationId]['admin']['_typoScriptNodeValue'] === 1) {
             $emailAddresses = GeneralUtility::trimExplode(',', $settings['notifications'][$notificationId]['admin']['email']);
+            /** @var MailMessage $mail */
             $mail = GeneralUtility::makeInstance(MailMessage::class);
             $mail
                 ->setSubject($notification->getTitle())

@@ -220,7 +220,7 @@ class PostController extends ActionController
                 $month,
                 $dateTime->format('F'),
                 $year,
-            ], LocalizationUtility::translate('meta.title.listPostsByDate', 'blog'));
+            ], (string)LocalizationUtility::translate('meta.title.listPostsByDate', 'blog'));
             MetaTagService::set(MetaTagService::META_TITLE, (string) $title);
             MetaTagService::set(MetaTagService::META_DESCRIPTION, (string) LocalizationUtility::translate('meta.description.listPostsByDate', 'blog'));
         }
@@ -243,7 +243,6 @@ class PostController extends ActionController
             );
 
             if (!empty($categories)) {
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $category = $categories->getFirst();
             }
         }

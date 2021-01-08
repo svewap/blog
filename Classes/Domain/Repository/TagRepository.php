@@ -21,7 +21,7 @@ class TagRepository extends Repository
     /**
      * Plugin settings
      *
-     * @var array $pluginSettings
+     * @var array<string,mixed> $pluginSettings
      */
     protected $pluginSettings;
 
@@ -46,12 +46,14 @@ class TagRepository extends Repository
     /**
      * @param int $limit
      *
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return array<int, mixed>
      * @throws \InvalidArgumentException
      */
-    public function findTopByUsage($limit = 20)
+    public function findTopByUsage($limit = 20): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $queryBuilder = $connectionPool
             ->getQueryBuilderForTable('tx_blog_domain_model_tag');
         $queryBuilder
             ->select('t.uid', 't.title')

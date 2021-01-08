@@ -62,8 +62,9 @@ class DatabaseMonthYearUpdate implements UpgradeWizardInterface
      */
     public function executeUpdate(): bool
     {
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('pages');
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connection = $connectionPool->getConnectionForTable('pages');
         $queryBuilder = $connection->createQueryBuilder();
         $queryBuilder->getRestrictions()->removeAll();
         $statement = $queryBuilder->select('uid', 'crdate')
@@ -107,7 +108,9 @@ class DatabaseMonthYearUpdate implements UpgradeWizardInterface
      */
     public function updateNecessary(): bool
     {
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('pages');
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connection = $connectionPool->getConnectionForTable('pages');
         $tableColumns = $connection->getSchemaManager()->listTableColumns('pages');
         if (!isset($tableColumns['crdate_month']) && !isset($tableColumns['crdate_year'])) {
             return false;

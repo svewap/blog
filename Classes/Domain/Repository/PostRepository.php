@@ -28,13 +28,14 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Qom\ComparisonInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class PostRepository extends Repository
 {
     /**
-     * @var array
+     * @var array<int,mixed>
      */
     protected $defaultConstraints = [];
 
@@ -43,6 +44,7 @@ class PostRepository extends Repository
      */
     public function initializeObject(): void
     {
+        /** @var Typo3QuerySettings $querySettings */
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
         // don't add the pid constraint
         $querySettings->setRespectStoragePage(false);
@@ -50,7 +52,11 @@ class PostRepository extends Repository
         $query = $this->createQuery();
 
         $this->defaultConstraints[] = $query->equals('doktype', Constants::DOKTYPE_BLOG_POST);
-        if (GeneralUtility::makeInstance(Context::class)->getAspect('language')->getId() === 0) {
+        /** @var Context $context */
+        $context = GeneralUtility::makeInstance(Context::class);
+        /** @var LanguageAspect $languageAspect */
+        $languageAspect = $context->getAspect('language');
+        if ($languageAspect->getId() === 0) {
             $this->defaultConstraints[] = $query->logicalOr([
                 $query->equals('l18n_cfg', 0),
                 $query->equals('l18n_cfg', 2)
@@ -63,30 +69,39 @@ class PostRepository extends Repository
         ];
     }
 
-    public function findByUidRespectQuerySettings(int $uid)
+    /**
+     * @return null|Post
+     */
+    public function findByUidRespectQuerySettings(int $uid): ?Post
     {
         $query = $this->createQuery();
         $query->matching($query->equals('uid', $uid));
-        return $query->execute()->getFirst();
+        /** @var QueryResultInterface $result */
+        $result = $query->execute();
+        /** @var null|Post $post */
+        $post = $result->getFirst();
+        return $post;
     }
 
     /**
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findAll()
+    public function findAll(): QueryResultInterface
     {
-        return $this->getFindAllQuery()->execute();
+        /** @var QueryResultInterface $result */
+        $result = $this->getFindAllQuery()->execute();
+        return $result;
     }
 
     /**
      * @param int $blogSetup
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findAllByPid(int $blogSetup = null)
+    public function findAllByPid(int $blogSetup = null): QueryResultInterface
     {
         $query = $this->getFindAllQuery();
 
@@ -99,21 +114,27 @@ class PostRepository extends Repository
             ]));
         }
 
-        return $query->execute();
+        /** @var QueryResultInterface $result */
+        $result = $query->execute();
+
+        return $result;
     }
 
     /**
      * @param int $limit
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException#
      */
-    public function findAllWithLimit(int $limit)
+    public function findAllWithLimit(int $limit): QueryResultInterface
     {
         $query = $this->getFindAllQuery();
         $query->setLimit($limit);
 
-        return $query->execute();
+        /** @var QueryResultInterface $result */
+        $result = $query->execute();
+
+        return $result;
     }
 
     /**
@@ -142,11 +163,11 @@ class PostRepository extends Repository
 
     /**
      * @param Author $author
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findAllByAuthor(Author $author)
+    public function findAllByAuthor(Author $author): QueryResultInterface
     {
         $query = $this->createQuery();
         $constraints = $this->defaultConstraints;
@@ -156,12 +177,15 @@ class PostRepository extends Repository
         }
         $constraints[] = $query->contains('authors', $author);
 
-        return $query->matching($query->logicalAnd($constraints))->execute();
+        /** @var QueryResultInterface $result */
+        $result = $query->matching($query->logicalAnd($constraints))->execute();
+
+        return $result;
     }
 
     /**
      * @param Category $category
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
@@ -175,16 +199,19 @@ class PostRepository extends Repository
             $constraints[] = $storagePidConstraint;
         }
 
-        return $query->matching($query->logicalAnd($constraints))->execute();
+        /** @var QueryResultInterface $result */
+        $result = $query->matching($query->logicalAnd($constraints))->execute();
+
+        return $result;
     }
 
     /**
      * @param Tag $tag
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function findAllByTag(Tag $tag)
+    public function findAllByTag(Tag $tag): QueryResultInterface
     {
         $query = $this->createQuery();
         $constraints = $this->defaultConstraints;
@@ -194,13 +221,16 @@ class PostRepository extends Repository
             $constraints[] = $storagePidConstraint;
         }
 
-        return $query->matching($query->logicalAnd($constraints))->execute();
+        /** @var QueryResultInterface $result */
+        $result = $query->matching($query->logicalAnd($constraints))->execute();
+
+        return $result;
     }
 
     /**
      * @param int $year
      * @param int $month
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      * @throws \Exception
@@ -224,7 +254,10 @@ class PostRepository extends Repository
         $constraints[] = $query->greaterThanOrEqual('publish_date', $startDate->getTimestamp());
         $constraints[] = $query->lessThanOrEqual('publish_date', $endDate->getTimestamp());
 
-        return $query->matching($query->logicalAnd($constraints))->execute();
+        /** @var QueryResultInterface $result */
+        $result = $query->matching($query->logicalAnd($constraints))->execute();
+
+        return $result;
     }
 
     /**
@@ -239,8 +272,9 @@ class PostRepository extends Repository
             ? (int)$typoScriptFrontendController->id
             : (int)GeneralUtility::_GP('id');
 
-        $currentLanguageId = (int)GeneralUtility::makeInstance(Context::class)
-                                                ->getPropertyFromAspect('language', 'id', 0);
+        /** @var Context $context */
+        $context = GeneralUtility::makeInstance(Context::class);
+        $currentLanguageId = (int)$context->getPropertyFromAspect('language', 'id', 0);
 
         $post = $this->getPostWithLanguage($pageId, $currentLanguageId);
 
@@ -263,10 +297,13 @@ class PostRepository extends Repository
             $constraints[] = $query->equals('uid', $pageId);
         }
 
-        return $query
+        /** @var QueryResultInterface $result */
+        $result = $query
             ->matching($query->logicalAnd($constraints))
-            ->execute()
-            ->getFirst();
+            ->execute();
+        /** @var null|Post $post */
+        $post = $result->getFirst();
+        return $post;
     }
 
     /**
@@ -359,10 +396,12 @@ class PostRepository extends Repository
         }
 
         $selectedPosts = [];
+        /** @var ObjectStorage $posts */
         $posts = GeneralUtility::makeInstance(ObjectStorage::class);
 
         $currentPost = $this->findCurrentPost();
         if ($currentPost instanceof Post) {
+            /** @var Category $category */
             foreach ($currentPost->getCategories() as $category) {
                 $postsOfCategory = $this->findAllByCategory($category);
                 /** @var Post $postOfCategory */
@@ -371,7 +410,7 @@ class PostRepository extends Repository
                         continue;
                     }
 
-                    if (!array_key_exists($postOfCategory->getUid(), $selectedPosts)) {
+                    if (!array_key_exists((int)$postOfCategory->getUid(), $selectedPosts)) {
                         $selectedPosts[$postOfCategory->getUid()] = $categoryMultiplier;
                     } else {
                         $selectedPosts[$postOfCategory->getUid()] += $categoryMultiplier;
@@ -379,6 +418,7 @@ class PostRepository extends Repository
                 }
             }
 
+            /** @var Tag $tag */
             foreach ($currentPost->getTags() as $tag) {
                 $postsOfTag = $this->findAllByTag($tag);
                 /** @var Post $postOfTag */
@@ -387,10 +427,10 @@ class PostRepository extends Repository
                         continue;
                     }
 
-                    if (!array_key_exists($postOfTag->getUid(), $selectedPosts)) {
-                        $selectedPosts[$postOfTag->getUid()] = $tagMultiplier;
+                    if (!array_key_exists((int)$postOfTag->getUid(), $selectedPosts)) {
+                        $selectedPosts[(int)$postOfTag->getUid()] = $tagMultiplier;
                     } else {
-                        $selectedPosts[$postOfTag->getUid()] += $tagMultiplier;
+                        $selectedPosts[(int)$postOfTag->getUid()] += $tagMultiplier;
                     }
                 }
             }
@@ -402,7 +442,7 @@ class PostRepository extends Repository
             if ($i === $limit) {
                 break;
             }
-            $posts->attach($this->findByUid($selectedPost));
+            $posts->attach($this->findByUid((int)$selectedPost));
             $i++;
         }
 
@@ -415,6 +455,7 @@ class PostRepository extends Repository
      */
     protected function getStoragePidsFromTypoScript(): array
     {
+        /** @var ConfigurationManager $configurationManager */
         $configurationManager = $this->objectManager->get(ConfigurationManager::class);
         $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
 
@@ -448,7 +489,9 @@ class PostRepository extends Repository
         });
 
         if (\count($pids) === 0) {
-            $rootLine = GeneralUtility::makeInstance(RootlineUtility::class, $this->getTypoScriptFrontendController()->id)->get();
+            /** @var RootlineUtility $rootlineUtility **/
+            $rootlineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $this->getTypoScriptFrontendController()->id);
+            $rootLine = $rootlineUtility->get();
             foreach ($rootLine as $value) {
                 $pids[] = $value['uid'];
             }

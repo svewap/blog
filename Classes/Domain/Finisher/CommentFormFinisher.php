@@ -29,6 +29,9 @@ use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
  */
 class CommentFormFinisher extends AbstractFinisher
 {
+    /**
+     * @var array<string,mixed>
+     */
     protected static $messages = [
         CommentService::STATE_ERROR => [
             'title' => 'message.addComment.error.title',
@@ -49,10 +52,14 @@ class CommentFormFinisher extends AbstractFinisher
 
     protected function executeInternal()
     {
+        /** @var ConfigurationManagerInterface $configurationManager */
         $configurationManager = $this->objectManager->get(ConfigurationManagerInterface::class);
         $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
+        /** @var PostRepository $postRepository */
         $postRepository = $this->objectManager->get(PostRepository::class);
+        /** @var CacheService $cacheService */
         $cacheService = $this->objectManager->get(CacheService::class);
+        /** @var CommentService $commentService */
         $commentService = $this->objectManager->get(CommentService::class);
         $commentService->injectSettings($settings['comments']);
 
@@ -67,6 +74,7 @@ class CommentFormFinisher extends AbstractFinisher
         $state = $commentService->addComment($post, $comment);
 
         // Add FlashMessage
+        /** @var FlashMessage $flashMessage */
         $flashMessage = $this->objectManager->get(
             FlashMessage::class,
             LocalizationUtility::translate(self::$messages[$state]['text'], 'blog'),
@@ -78,11 +86,14 @@ class CommentFormFinisher extends AbstractFinisher
 
         if ($state !== CommentService::STATE_ERROR) {
             $comment->setCrdate(new \DateTime());
-            GeneralUtility::makeInstance(NotificationManager::class)
-                ->notify(GeneralUtility::makeInstance(CommentAddedNotification::class, '', '', [
-                    'comment' => $comment,
-                    'post' => $post,
-                ]));
+            /** @var CommentAddedNotification $commentAddedNotification */
+            $commentAddedNotification = GeneralUtility::makeInstance(CommentAddedNotification::class, '', '', [
+                'comment' => $comment,
+                'post' => $post,
+            ]);
+            /** @var NotificationManager $notificationManager */
+            $notificationManager = GeneralUtility::makeInstance(NotificationManager::class);
+            $notificationManager->notify($commentAddedNotification);
             $cacheService->flushCacheByTag('tx_blog_post_' . $post->getUid());
         }
     }

@@ -16,7 +16,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class NotificationManager
 {
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $visitorsRegistry = [];
 

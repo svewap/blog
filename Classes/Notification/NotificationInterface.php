@@ -34,7 +34,7 @@ interface NotificationInterface
     /**
      * Get additional data of notification
      *
-     * @return array
+     * @return array<string,mixed>
      */
     public function getData(): array;
 }

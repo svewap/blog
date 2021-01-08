@@ -15,8 +15,10 @@ use T3G\AgencyPack\Blog\Domain\Model\Post;
 use T3G\AgencyPack\Blog\Domain\Repository\CommentRepository;
 use T3G\AgencyPack\Blog\Domain\Repository\PostRepository;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * Class CommentService.
@@ -43,7 +45,7 @@ class CommentService
     protected $persistenceManager;
 
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $settings = [
         'active' => 0,
@@ -51,7 +53,7 @@ class CommentService
     ];
 
     /**
-     * @param array $settings
+     * @param array<string,mixed> $settings
      */
     public function injectSettings(array $settings): void
     {
@@ -113,9 +115,12 @@ class CommentService
                     break;
                 default:
             }
-            $comment->setPid($post->getUid());
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $comment->setPostLanguageId(GeneralUtility::makeInstance(Context::class)->getAspect('language')->getId());
+            $comment->setPid((int)$post->getUid());
+            /** @var Context $context */
+            $context = GeneralUtility::makeInstance(Context::class);
+            /** @var LanguageAspect $languageAspect */
+            $languageAspect = $context->getAspect('language');
+            $comment->setPostLanguageId($languageAspect->getId());
             $post->addComment($comment);
             $this->postRepository->update($post);
             $this->persistenceManager->persistAll();
@@ -144,11 +149,11 @@ class CommentService
 
     /**
      * @param Post $post
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function getCommentsByPost(Post $post)
+    public function getCommentsByPost(Post $post): QueryResultInterface
     {
         return $this->commentRepository->findAllByPost($post);
     }

@@ -32,18 +32,22 @@ class MailMessage
     protected $body;
 
     /**
-     * @var array
+     * @var array<int|string, string>
      */
     protected $from;
 
     /**
-     * @var array
+     * @var array<int|string, string>
      */
     protected $to;
 
     public function __construct()
     {
-        $this->mailMessage = GeneralUtility::makeInstance(CoreMailMessage::class);
+        /**
+         * @var CoreMailMessage $mailMessage;
+         */
+        $mailMessage = GeneralUtility::makeInstance(CoreMailMessage::class);
+        $this->mailMessage = $mailMessage;
     }
 
     public function setSubject(string $subject): self
@@ -68,23 +72,35 @@ class MailMessage
         return $this->body;
     }
 
+    /**
+     * @param array<int|string, string> $from
+     */
     public function setFrom(array $from): self
     {
         $this->from = $from;
         return $this;
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     public function getFrom(): array
     {
         return $this->from;
     }
 
+    /**
+     * @param array<int|string, string> $to
+     */
     public function setTo(array $to): self
     {
         $this->to = $to;
         return $this;
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     public function getTo(): array
     {
         return $this->to;

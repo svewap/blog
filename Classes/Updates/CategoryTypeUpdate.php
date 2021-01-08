@@ -48,7 +48,7 @@ class CategoryTypeUpdate implements UpgradeWizardInterface
     }
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getPrerequisites(): array
     {
@@ -62,8 +62,10 @@ class CategoryTypeUpdate implements UpgradeWizardInterface
      */
     public function updateNecessary(): bool
     {
-        $queryBuilderPages = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
-        $queryBuilderPages->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $queryBuilderPages = $connectionPool->getQueryBuilderForTable('pages');
+        $queryBuilderPages->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $pagesStatement = $queryBuilderPages
             ->select('uid')
             ->from('pages')
@@ -79,8 +81,8 @@ class CategoryTypeUpdate implements UpgradeWizardInterface
             $pages[] = $pageRecord['uid'];
         }
 
-        $queryBuilderCategories = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_category');
-        $queryBuilderCategories->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        $queryBuilderCategories = $connectionPool->getQueryBuilderForTable('sys_category');
+        $queryBuilderCategories->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $elementCount = $queryBuilderCategories
             ->count('uid')
             ->from('sys_category')
@@ -101,8 +103,10 @@ class CategoryTypeUpdate implements UpgradeWizardInterface
      */
     public function executeUpdate(): bool
     {
-        $queryBuilderPages = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
-        $queryBuilderPages->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $queryBuilderPages = $connectionPool->getQueryBuilderForTable('pages');
+        $queryBuilderPages->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $pagesStatement = $queryBuilderPages
             ->select('uid')
             ->from('pages')
@@ -118,8 +122,8 @@ class CategoryTypeUpdate implements UpgradeWizardInterface
             $pages[] = $pageRecord['uid'];
         }
 
-        $queryBuilderCategories = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_category');
-        $queryBuilderCategories->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        $queryBuilderCategories = $connectionPool->getQueryBuilderForTable('sys_category');
+        $queryBuilderCategories->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $categoryStatement = $queryBuilderCategories
             ->select('uid', 'record_type')
             ->from('sys_category')
@@ -132,13 +136,13 @@ class CategoryTypeUpdate implements UpgradeWizardInterface
             ->execute();
 
         while ($categoryRecord = $categoryStatement->fetch()) {
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_category');
+            $queryBuilder = $connectionPool->getQueryBuilderForTable('sys_category');
             $queryBuilder
                 ->update('sys_category')
                 ->where(
                     $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter((int) $categoryRecord['uid'], \PDO::PARAM_INT))
                 )
-                ->set('record_type', Constants::CATEGORY_TYPE_BLOG);
+                ->set('record_type', (string) Constants::CATEGORY_TYPE_BLOG);
             $queryBuilder->execute();
         }
 

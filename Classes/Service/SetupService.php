@@ -21,10 +21,13 @@ use TYPO3\CMS\Core\Utility\RootlineUtility;
 class SetupService
 {
     /**
-     * @var array of created record uids
+     * @var array<string,mixed> of created record uids
      */
     protected $recordUidArray = [];
 
+    /**
+     * @return array<int,mixed>
+     */
     public function determineBlogSetups(): array
     {
         $setups = [];
@@ -47,8 +50,10 @@ class SetupService
                     ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogUid, \PDO::PARAM_INT)))
                     ->execute()
                     ->fetchColumn();
-                $rootline = array_reverse(GeneralUtility::makeInstance(RootlineUtility::class, $blogUid)->get());
-                $setups[$blogUid] = [
+                /** @var RootlineUtility $rootlineUtility */
+                $rootlineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $blogUid);
+                $rootline = array_reverse($rootlineUtility->get());
+                $setups[(int)$blogUid] = [
                     'uid' => $blogUid,
                     'title' => $title,
                     'path' => implode(' / ', array_map(function ($page) {
@@ -63,6 +68,9 @@ class SetupService
         return $setups;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function createBlogSetup(array $data): bool
     {
         $title = array_key_exists('title', $data) ? (string)$data['title'] : null;
@@ -75,6 +83,7 @@ class SetupService
             if ($title !== null) {
                 $blogSetup['pages']['NEW_blogRoot']['title'] = $title;
             }
+            /** @var DataHandler $dataHandler */
             $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
             $dataHandler->start($blogSetup, []);
             $result = $dataHandler->process_datamap();
@@ -93,7 +102,7 @@ class SetupService
                     ->execute()
                     ->fetch();
                 $queryBuilder->update('pages')
-                    ->set('TSconfig', str_replace('NEW_blogFolder', $blogFolderUid, $record['TSconfig']))
+                    ->set('TSconfig', str_replace('NEW_blogFolder', (string)$blogFolderUid, $record['TSconfig']))
                     ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($blogRootUid, \PDO::PARAM_INT)))
                     ->execute();
 
@@ -102,6 +111,7 @@ class SetupService
                     // @noinspection PhpIncludeInspection
                     $blogSetupRelations = require $blogSetupRelations;
                     $blogSetupRelations = $this->replaceNewUids($blogSetupRelations);
+                    /** @var DataHandler $dataHandler */
                     $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
                     $dataHandler->start($blogSetupRelations, []);
                     $resultRelations = $dataHandler->process_datamap();
@@ -137,6 +147,10 @@ class SetupService
         return $result;
     }
 
+    /**
+     * @param array<mixed, mixed> $setup
+     * @return string[]
+     */
     protected function replaceNewUids(array $setup): array
     {
         $newSetup = [];
@@ -160,7 +174,8 @@ class SetupService
 
     protected function getQueryBuilderForTable(string $table) : QueryBuilder
     {
-        return GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable($table);
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        return $connectionPool->getQueryBuilderForTable($table);
     }
 }

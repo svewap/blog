@@ -13,7 +13,6 @@ namespace T3G\AgencyPack\Blog\ViewHelpers\Link\Be;
 use T3G\AgencyPack\Blog\Domain\Model\Post;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
 class PostViewHelper extends AbstractTagBasedViewHelper
@@ -28,7 +27,6 @@ class PostViewHelper extends AbstractTagBasedViewHelper
      * Arguments initialization.
      *
      * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
      */
     public function initializeArguments(): void
     {
@@ -53,34 +51,31 @@ class PostViewHelper extends AbstractTagBasedViewHelper
         $post = $this->arguments['post'];
         $pageUid = (int)$post->getUid();
 
-        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        /** @var UriBuilder $routingUriBuilder */
+        $routingUriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         switch ($this->arguments['action']) {
             case 'edit':
-                $uri = (string)$uriBuilder->buildUriFromRoute('record_edit', ['edit[pages][' . $pageUid . ']' => 'edit']);
+                $uri = (string)$routingUriBuilder->buildUriFromRoute('record_edit', ['edit[pages][' . $pageUid . ']' => 'edit']);
                 break;
             case 'show':
             default:
-                $uri = (string)$uriBuilder->buildUriFromRoute('web_layout', ['id' => $pageUid]);
+                $uri = (string)$routingUriBuilder->buildUriFromRoute('web_layout', ['id' => $pageUid]);
                 break;
         }
 
         $arguments = GeneralUtility::_GET();
         $route = $arguments['route'];
         unset($arguments['route'], $arguments['token']);
-        $uri .= '&returnUrl=' . rawurlencode((string)GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoutePath($route, $arguments));
+        $uri .= '&returnUrl=' . rawurlencode((string)$routingUriBuilder->buildUriFromRoutePath($route, $arguments));
 
-        if ($uri !== '') {
-            if ($this->arguments['returnUri']) {
-                return $uri;
-            }
-            $title = $post !== null ? $post->getTitle() : LocalizationUtility::translate('backend.message.nopost', 'blog');
-            $linkText = $this->renderChildren() ?: $title;
-            $this->tag->addAttribute('href', $uri);
-            $this->tag->setContent($linkText);
-            $result = $this->tag->render();
-        } else {
-            $result = $this->renderChildren();
+        if ($this->arguments['returnUri']) {
+            return $uri;
         }
+        $title = $post->getTitle();
+        $linkText = $this->renderChildren() ?: $title;
+        $this->tag->addAttribute('href', $uri);
+        $this->tag->setContent($linkText);
+        $result = $this->tag->render();
 
         return $result;
     }

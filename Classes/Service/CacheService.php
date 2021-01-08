@@ -51,7 +51,7 @@ class CacheService
     }
 
     /**
-     * @param array $tags
+     * @param string[] $tags
      */
     public function addTagsToPage(array $tags): void
     {
@@ -69,7 +69,7 @@ class CacheService
     }
 
     /**
-     * @param array $tags
+     * @param string[] $tags
      * @throws \InvalidArgumentException
      * @throws \TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException
      */

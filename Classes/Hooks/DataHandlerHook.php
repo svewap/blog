@@ -31,7 +31,7 @@ class DataHandlerHook
      * @param string $status
      * @param string $table
      * @param string|int $id
-     * @param array $fieldArray
+     * @param array<string,mixed> $fieldArray
      * @param DataHandler $pObj
      *
      * @throws \InvalidArgumentException
@@ -44,8 +44,9 @@ class DataHandlerHook
                 $id = $pObj->substNEWwithIDs[$id];
             }
 
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable($table);
+            /** @var ConnectionPool $connectionPool */
+            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+            $queryBuilder = $connectionPool->getQueryBuilderForTable($table);
             $queryBuilder->getRestrictions()->removeAll();
             $record = $queryBuilder
                 ->select('*')
@@ -57,7 +58,7 @@ class DataHandlerHook
                 $timestamp = (int) (!empty($record['publish_date']) ? $record['publish_date'] : time());
                 $queryBuilder
                     ->update($table)
-                    ->set('publish_date', $timestamp)
+                    ->set('publish_date', (string)$timestamp)
                     ->set('crdate_month', date('n', (int)$timestamp))
                     ->set('crdate_year', date('Y', (int)$timestamp))
                     ->where($queryBuilder->expr()->eq('uid', (int)$id))
@@ -68,24 +69,29 @@ class DataHandlerHook
         // Clear caches if required
         switch ($table) {
             case self::TABLE_PAGES:
-                GeneralUtility::makeInstance(CacheService::class)
-                    ->flushCacheByTag('tx_blog_post_' . $id);
+                /** @var CacheService $cacheService */
+                $cacheService = GeneralUtility::makeInstance(CacheService::class);
+                $cacheService->flushCacheByTag('tx_blog_post_' . $id);
                 break;
             case self::TABLE_CATEGORIES:
-                GeneralUtility::makeInstance(CacheService::class)
-                    ->flushCacheByTag('tx_blog_category_' . $id);
+                /** @var CacheService $cacheService */
+                $cacheService = GeneralUtility::makeInstance(CacheService::class);
+                $cacheService->flushCacheByTag('tx_blog_category_' . $id);
                 break;
             case self::TABLE_AUTHORS:
-                GeneralUtility::makeInstance(CacheService::class)
-                    ->flushCacheByTag('tx_blog_author_' . $id);
+                /** @var CacheService $cacheService */
+                $cacheService = GeneralUtility::makeInstance(CacheService::class);
+                $cacheService->flushCacheByTag('tx_blog_author_' . $id);
                 break;
             case self::TABLE_COMMENTS:
-                GeneralUtility::makeInstance(CacheService::class)
-                    ->flushCacheByTag('tx_blog_comment_' . $id);
+                /** @var CacheService $cacheService */
+                $cacheService = GeneralUtility::makeInstance(CacheService::class);
+                $cacheService->flushCacheByTag('tx_blog_comment_' . $id);
                 break;
             case self::TABLE_TAGS:
-                GeneralUtility::makeInstance(CacheService::class)
-                    ->flushCacheByTag('tx_blog_tag_' . $id);
+                /** @var CacheService $cacheService */
+                $cacheService = GeneralUtility::makeInstance(CacheService::class);
+                $cacheService->flushCacheByTag('tx_blog_tag_' . $id);
                 break;
             default:
         }

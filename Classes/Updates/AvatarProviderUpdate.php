@@ -60,9 +60,11 @@ class AvatarProviderUpdate implements UpgradeWizardInterface
      */
     public function executeUpdate(): bool
     {
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_blog_domain_model_author');
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connection = $connectionPool->getConnectionForTable('tx_blog_domain_model_author');
         $queryBuilder = $connection->createQueryBuilder();
-        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        $queryBuilder->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $statement = $queryBuilder->select('uid', 'avatar_provider')
             ->from('tx_blog_domain_model_author')
             ->where(
@@ -95,8 +97,10 @@ class AvatarProviderUpdate implements UpgradeWizardInterface
      */
     public function updateNecessary(): bool
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_blog_domain_model_author');
-        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $queryBuilder = $connectionPool->getQueryBuilderForTable('tx_blog_domain_model_author');
+        $queryBuilder->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $elementCount = $queryBuilder->count('uid')
             ->from('tx_blog_domain_model_author')
             ->where(

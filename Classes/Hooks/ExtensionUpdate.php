@@ -18,8 +18,7 @@ use TYPO3\CMS\Extensionmanager\Utility\InstallUtility;
 class ExtensionUpdate
 {
     /**
-     * available updates
-     * @var array
+     * @var string[]
      */
     protected $updates = [
         'migrateCommentsStatus'
@@ -37,6 +36,7 @@ class ExtensionUpdate
             return;
         }
 
+        /** @var Registry $registry */
         $registry = GeneralUtility::makeInstance(Registry::class);
         $appliedUpdates = $registry->get(__CLASS__, 'updates', []);
         foreach ($this->updates as $update) {
@@ -55,21 +55,23 @@ class ExtensionUpdate
      */
     protected function migrateCommentsStatus(): bool
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $queryBuilder = $connectionPool
             ->getQueryBuilderForTable('tx_blog_domain_model_comment');
         $queryBuilder->getRestrictions()->removeAll();
         $queryBuilder->update('tx_blog_domain_model_comment')
-            ->set('status', 0)
+            ->set('status', '0')
             ->where($queryBuilder->expr()->eq('hidden', 1))
             ->andWhere($queryBuilder->expr()->eq('deleted', 0))
             ->execute();
         $queryBuilder->update('tx_blog_domain_model_comment')
-            ->set('status', 10)
+            ->set('status', '10')
             ->where($queryBuilder->expr()->eq('hidden', 0))
             ->andWhere($queryBuilder->expr()->eq('deleted', 0))
             ->execute();
         $queryBuilder->update('tx_blog_domain_model_comment')
-            ->set('status', 50)
+            ->set('status', '50')
             ->where($queryBuilder->expr()->eq('hidden', 1))
             ->andWhere($queryBuilder->expr()->eq('deleted', 1))
             ->execute();

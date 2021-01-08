@@ -43,7 +43,7 @@ class RequestFactory implements RequestFactoryInterface
      *
      * @param string $uri the URI to request
      * @param string $method the HTTP method (defaults to GET)
-     * @param array $options custom options for this request
+     * @param array<string,mixed> $options custom options for this request
      * @return ResponseInterface
      */
     public function request(string $uri, string $method = 'GET', array $options = []): ResponseInterface

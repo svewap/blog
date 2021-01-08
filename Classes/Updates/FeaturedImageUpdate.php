@@ -43,7 +43,10 @@ class FeaturedImageUpdate implements UpgradeWizardInterface, RepeatableInterface
         $pages = $this->getEgliablePages();
         $fileReferences = $this->getEgliableFileReferences();
 
-        $builderPages = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+
+        $builderPages = $connectionPool->getQueryBuilderForTable('pages');
         $builderPages
             ->update('pages')
             ->where($builderPages->expr()->in('uid', $builderPages->createNamedParameter(array_keys($pages), Connection::PARAM_INT_ARRAY)))
@@ -51,7 +54,7 @@ class FeaturedImageUpdate implements UpgradeWizardInterface, RepeatableInterface
             ->set('media', '0');
         $builderPages->execute();
 
-        $builderFileReferences = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_file_reference');
+        $builderFileReferences = $connectionPool->getQueryBuilderForTable('sys_file_reference');
         $builderFileReferences
             ->update('sys_file_reference')
             ->where($builderFileReferences->expr()->in('uid', $builderFileReferences->createNamedParameter(array_keys($fileReferences), Connection::PARAM_INT_ARRAY)))
@@ -66,6 +69,9 @@ class FeaturedImageUpdate implements UpgradeWizardInterface, RepeatableInterface
         return (bool) count($this->getEgliableFileReferences());
     }
 
+    /**
+     * @return string[]
+     */
     public function getPrerequisites(): array
     {
         return [
@@ -73,10 +79,15 @@ class FeaturedImageUpdate implements UpgradeWizardInterface, RepeatableInterface
         ];
     }
 
+    /**
+     * @return array<int,mixed>
+     */
     protected function getEgliablePages(): array
     {
-        $builder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
-        $builder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $builder = $connectionPool->getQueryBuilderForTable('pages');
+        $builder->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $statement = $builder
             ->select('uid', 'doktype', 'media', 'featured_image')
             ->from('pages')
@@ -91,18 +102,22 @@ class FeaturedImageUpdate implements UpgradeWizardInterface, RepeatableInterface
 
         $records = [];
         while ($record = $statement->fetch()) {
-            $records[$record['uid']] = $record;
+            $records[(int)$record['uid']] = $record;
         }
 
         return $records;
     }
 
+    /**
+     * @return array<int,mixed>
+     */
     protected function getEgliableFileReferences(): array
     {
         $pages = $this->getEgliablePages();
-
-        $builder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_file_reference');
-        $builder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $builder = $connectionPool->getQueryBuilderForTable('sys_file_reference');
+        $builder->getRestrictions()->removeAll()->add(new DeletedRestriction());
         $statement = $builder
             ->select('uid', 'tablenames', 'fieldname')
             ->from('sys_file_reference')
@@ -117,7 +132,7 @@ class FeaturedImageUpdate implements UpgradeWizardInterface, RepeatableInterface
 
         $records = [];
         while ($record = $statement->fetch()) {
-            $records[$record['uid']] = $record;
+            $records[(int)$record['uid']] = $record;
         }
 
         return $records;

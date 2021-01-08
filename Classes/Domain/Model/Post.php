@@ -19,6 +19,7 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 class Post extends AbstractEntity
 {
@@ -240,7 +241,7 @@ class Post extends AbstractEntity
     }
 
     /**
-     * @param $subtitle
+     * @param string $subtitle
      * @return Post
      */
     public function setSubtitle($subtitle): self
@@ -369,15 +370,17 @@ class Post extends AbstractEntity
     }
 
     /**
-     * @return array|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function getActiveComments()
+    public function getActiveComments(): QueryResultInterface
     {
-        return GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(CommentRepository::class)
-            ->findAllByPost($this);
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var CommentRepository $commentRepository */
+        $commentRepository = $objectManager->get(CommentRepository::class);
+        return $commentRepository->findAllByPost($this);
     }
 
     /**
@@ -542,18 +545,27 @@ class Post extends AbstractEntity
      */
     public function getUri(): string
     {
-        return GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(UriBuilder::class)
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var UriBuilder $uriBuilder */
+        $uriBuilder = $objectManager->get(UriBuilder::class);
+        return $uriBuilder
                 ->setCreateAbsoluteUri(true)
-                ->setTargetPageUid($this->getUid())
+                ->setTargetPageUid((int)$this->getUid())
                 ->build();
     }
 
+    /**
+     * @return array>string,string>
+     */
     public function getAsArray(): array
     {
         return $this->__toArray();
     }
 
+    /**
+     * @return array>string,string>
+     */
     public function __toArray(): array
     {
         return [

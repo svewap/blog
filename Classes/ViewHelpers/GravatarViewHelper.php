@@ -26,7 +26,6 @@ class GravatarViewHelper extends AbstractTagBasedViewHelper
     /**
      * Arguments Initialization.
      *
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
      * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
      */
     public function initializeArguments(): void
@@ -50,8 +49,8 @@ class GravatarViewHelper extends AbstractTagBasedViewHelper
 
         $size = (int)$this->arguments['size'];
         $this->tag->addAttribute('src', $src);
-        $this->tag->addAttribute('width', $size);
-        $this->tag->addAttribute('height', $size);
+        $this->tag->addAttribute('width', (string) $size);
+        $this->tag->addAttribute('height', (string) $size);
 
         return $this->tag->render();
     }

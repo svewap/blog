@@ -28,20 +28,20 @@ class ArchiveUtility
      *  ...
      * ]
      *
-     * @param array $data
-     * @return array
+     * @param array<string,mixed> $data
+     * @return array<int,mixed>
      * @throws \Exception
      */
     public static function extractDataFromPosts(array $data): array
     {
         $archiveData = [];
         foreach ($data as $result) {
-            if (empty($archiveData[$result['year']])) {
-                $archiveData[$result['year']] = [];
+            if (empty($archiveData[(int)$result['year']])) {
+                $archiveData[(int)$result['year']] = [];
             }
             $dateTime = new \DateTimeImmutable(sprintf('%d-%d-1', (int)$result['year'], (int)$result['month']));
             $result['timestamp'] = $dateTime->getTimestamp();
-            $archiveData[$result['year']][] = $result;
+            $archiveData[(int)$result['year']][] = $result;
         }
 
         return $archiveData;

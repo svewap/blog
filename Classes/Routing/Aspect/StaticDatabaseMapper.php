@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class StaticDatabaseMapper implements StaticMappableAspectInterface, \Countable
 {
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $settings;
 
@@ -37,17 +37,17 @@ class StaticDatabaseMapper implements StaticMappableAspectInterface, \Countable
     protected $groupBy;
 
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $where;
 
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $values;
 
     /**
-     * @param array $settings
+     * @param array<string,mixed> $settings
      * @throws \InvalidArgumentException
      */
     public function __construct(array $settings)
@@ -128,9 +128,10 @@ class StaticDatabaseMapper implements StaticMappableAspectInterface, \Countable
      */
     protected function buildValues(): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable($this->table);
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
 
+        $queryBuilder = $connectionPool->getQueryBuilderForTable($this->table);
         $queryBuilder
             ->select($this->field)
             ->from($this->table);

@@ -33,20 +33,23 @@ class CommentFormFactory extends AbstractFormFactory
      * This example build a FormDefinition manually,
      * so $configuration and $prototypeName are unused.
      *
-     * @param array $configuration
+     * @param array<string,mixed> $configuration
      * @param string $prototypeName
      * @return FormDefinition
      */
     public function build(array $configuration, string $prototypeName = null): FormDefinition
     {
         $prototypeName = 'standard';
+        /** @var ObjectManager $objectManager */
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var ConfigurationService $formConfigurationService */
         $formConfigurationService = $objectManager->get(ConfigurationService::class);
         $prototypeConfiguration = $formConfigurationService->getPrototypeConfiguration($prototypeName);
         $prototypeConfiguration['formElementsDefinition']['GoogleCaptcha'] = [
             'implementationClassName' => 'TYPO3\CMS\Form\Domain\Model\FormElements\GenericFormElement'
         ];
 
+        /** @var ConfigurationManagerInterface $configurationManager */
         $configurationManager = $objectManager->get(ConfigurationManagerInterface::class);
         $blogSettings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'blog');
         $captcha = [];
@@ -54,6 +57,7 @@ class CommentFormFactory extends AbstractFormFactory
         $captcha['sitekey'] = (string) trim($blogSettings['comments']['google_recaptcha']['website_key'] ?? '');
         $captcha['secret'] = (string) trim($blogSettings['comments']['google_recaptcha']['secret_key'] ?? '');
 
+        /** @var FormDefinition $form */
         $form = $objectManager->get(FormDefinition::class, 'postcomment', $prototypeConfiguration);
         $form->setRenderingOption('controllerAction', 'form');
         $form->setRenderingOption('submitButtonLabel', LocalizationUtility::translate('form.comment.submit', 'blog'));
@@ -94,10 +98,12 @@ class CommentFormFactory extends AbstractFormFactory
         }
 
         // Finisher
+        /** @var CommentFormFinisher $commentFinisher */
         $commentFinisher = $objectManager->get(CommentFormFinisher::class);
         $commentFinisher->setFinisherIdentifier(CommentFormFinisher::class);
         $form->addFinisher($commentFinisher);
 
+        /** @var RedirectFinisher $redirectFinisher */
         $redirectFinisher = $objectManager->get(RedirectFinisher::class);
         $redirectFinisher->setFinisherIdentifier(RedirectFinisher::class);
         $redirectFinisher->setOption('pageUid', (string)$this->getTypoScriptFrontendController()->id);

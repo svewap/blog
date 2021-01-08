@@ -26,7 +26,6 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
      * Arguments initialization.
      *
      * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
      */
     public function initializeArguments(): void
     {
@@ -62,7 +61,7 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
      */
     protected function buildUriFromDetailsPage(Author $author, bool $rssFormat)
     {
-        $uriBuilder = $this->getUriBuilder($author->getDetailsPage(), [], $rssFormat);
+        $uriBuilder = $this->getUriBuilder((int)$author->getDetailsPage(), [], $rssFormat);
         return $this->buildAnchorTag($uriBuilder->build(), $author);
     }
 
@@ -82,14 +81,16 @@ class AuthorViewHelper extends AbstractTagBasedViewHelper
 
     /**
      * @param int $pageUid
-     * @param array $additionalParams
+     * @param array<string,mixed> $additionalParams
      * @param bool $rssFormat
      * @return UriBuilder
      */
     protected function getUriBuilder(int $pageUid, array $additionalParams, bool $rssFormat): UriBuilder
     {
+        /** @var \TYPO3\CMS\Fluid\Core\Rendering\RenderingContext $renderingContext */
+        $renderingContext = $this->renderingContext;
         /** @var UriBuilder $uriBuilder */
-        $uriBuilder = $this->renderingContext->getControllerContext()->getUriBuilder();
+        $uriBuilder = $renderingContext->getControllerContext()->getUriBuilder();
         $uriBuilder->reset()
             ->setTargetPageUid($pageUid)
             ->setArguments($additionalParams);

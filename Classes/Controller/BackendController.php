@@ -95,7 +95,9 @@ class BackendController extends ActionController
 
     public function initializeAction(): void
     {
-        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
+        /** @var ModuleTemplate $moduleTemplate */
+        $moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
+        $this->moduleTemplate = $moduleTemplate;
         $this->iconFactory = $this->moduleTemplate->getIconFactory();
         $this->buttonBar = $this->moduleTemplate->getDocHeaderComponent()->getButtonBar();
 
@@ -129,14 +131,11 @@ class BackendController extends ActionController
     }
 
     /**
-     * Render the start page.
+     * @return ResponseInterface
      *
      * @throws \InvalidArgumentException
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException
-     *
-     * @return string
-     *
      * @throws \BadFunctionCallException
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException
      */
     public function setupWizardAction(): ResponseInterface
     {
@@ -147,7 +146,8 @@ class BackendController extends ActionController
 
     /**
      * @param int $blogSetup
-     * @return string
+     * @return ResponseInterface
+     *
      * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      * @throws \TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
@@ -173,10 +173,9 @@ class BackendController extends ActionController
     /**
      * @param string $filter
      * @param int $blogSetup
+     * @return ResponseInterface
      *
-     * @return string
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
-     *
      * @throws \TYPO3\CMS\Extbase\Mvc\Exception\InvalidExtensionNameException
      * @throws \InvalidArgumentException
      */
@@ -205,13 +204,8 @@ class BackendController extends ActionController
      * @param string $status
      * @param string $filter
      * @param int $blogSetup
-     * @param array $comments
+     * @param array<string,mixed> $comments
      * @param int $comment
-     * @throws \TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
      */
     public function updateCommentStatusAction(string $status, string $filter = null, int $blogSetup = null, array $comments = [], int $comment = null): void
     {
@@ -219,6 +213,7 @@ class BackendController extends ActionController
             $comments['__identity'][] = $comment;
         }
         foreach ($comments['__identity'] as $commentId) {
+            /** @var Comment $comment */
             $comment = $this->commentRepository->findByUid((int)$commentId);
             $updateComment = true;
             switch ($status) {
@@ -243,14 +238,11 @@ class BackendController extends ActionController
     }
 
     /**
-     * @param array $data
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
-     * @throws \TYPO3\CMS\Extensionmanager\Exception\ExtensionManagerException
+     * @param array<string,mixed> $data
      */
     public function createBlogAction(array $data = null): void
     {
-        if ($this->setupService->createBlogSetup($data)) {
+        if ($data !== null && $this->setupService->createBlogSetup($data)) {
             $this->addFlashMessage('Your blog setup has been created.', 'Congratulation');
         } else {
             $this->addFlashMessage('Sorry, your blog setup could not be created.', 'An error occurred', FlashMessage::ERROR);
@@ -270,6 +262,7 @@ class BackendController extends ActionController
      */
     protected function getFluidTemplateObject(string $templateNameAndPath): StandaloneView
     {
+        /** @var StandaloneView $view */
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:blog/Resources/Private/Layouts')]);
         $view->setPartialRootPaths([GeneralUtility::getFileAbsFileName('EXT:blog/Resources/Private/Partials')]);
@@ -283,7 +276,7 @@ class BackendController extends ActionController
 
     /**
      * @param string $templateNameAndPath
-     * @param array  $values
+     * @param array<string,mixed> $values
      *
      * @return string
      *

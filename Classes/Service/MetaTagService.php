@@ -42,7 +42,6 @@ class MetaTagService
                 break;
             default:
                 throw new \InvalidArgumentException('The type "' . $type . '" is not supported.', 1562020008);
-                break;
         }
     }
 
@@ -52,11 +51,14 @@ class MetaTagService
      */
     protected static function setTitle(string $value): void
     {
+        /** @var BlogTitleTagProvider $provider */
         $provider = GeneralUtility::makeInstance(BlogTitleTagProvider::class);
         $provider->setTitle($value);
-        $ogTitleManager = GeneralUtility::makeInstance(MetaTagManagerRegistry::class)->getManagerForProperty('og:title');
+        /** @var MetaTagManagerRegistry $metaTagManagerRegistry */
+        $metaTagManagerRegistry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
+        $ogTitleManager = $metaTagManagerRegistry->getManagerForProperty('og:title');
         $ogTitleManager->addProperty('og:title', $value);
-        $twitterTitleManager = GeneralUtility::makeInstance(MetaTagManagerRegistry::class)->getManagerForProperty('twitter:title');
+        $twitterTitleManager = $metaTagManagerRegistry->getManagerForProperty('twitter:title');
         $twitterTitleManager->addProperty('twitter:title', $value);
     }
 
@@ -66,11 +68,13 @@ class MetaTagService
      */
     protected static function setDescription(string $value): void
     {
-        $descriptionManager = GeneralUtility::makeInstance(MetaTagManagerRegistry::class)->getManagerForProperty('description');
+        /** @var MetaTagManagerRegistry $metaTagManagerRegistry */
+        $metaTagManagerRegistry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
+        $descriptionManager = $metaTagManagerRegistry->getManagerForProperty('description');
         $descriptionManager->addProperty('description', $value);
-        $ogDescriptionManager = GeneralUtility::makeInstance(MetaTagManagerRegistry::class)->getManagerForProperty('og:description');
+        $ogDescriptionManager = $metaTagManagerRegistry->getManagerForProperty('og:description');
         $ogDescriptionManager->addProperty('og:description', $value);
-        $twitterDescriptionManager = GeneralUtility::makeInstance(MetaTagManagerRegistry::class)->getManagerForProperty('twitter:description');
+        $twitterDescriptionManager = $metaTagManagerRegistry->getManagerForProperty('twitter:description');
         $twitterDescriptionManager->addProperty('twitter:description', $value);
     }
 }
