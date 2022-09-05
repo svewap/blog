@@ -36,12 +36,12 @@ class PostRepositoryDemandFactory
         $this->tagRepository = $tagRepository;
     }
 
-    public function createFromSettings(array $settings): PostRepositoryDemand
+    public function createFromSettings(array $settings, $ignoreSysLanguage = false): PostRepositoryDemand
     {
         $demand = new PostRepositoryDemand();
         $demand->setPosts(GeneralUtility::intExplode(',', $settings['posts'] ?? '', true));
 
-        foreach ($this->categoryRepository->findByUids(GeneralUtility::intExplode(',', $settings['categories'] ?? '')) as $category) {
+        foreach ($this->categoryRepository->findByUids(GeneralUtility::intExplode(',', $settings['categories'] ?? ''),$ignoreSysLanguage) as $category) {
             $demand->addCategory($category);
         }
 

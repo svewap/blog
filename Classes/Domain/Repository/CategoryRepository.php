@@ -40,9 +40,12 @@ class CategoryRepository extends Repository
         ];
     }
 
-    public function findByUids(array $uids)
+    public function findByUids(array $uids, $ignoreSysLanguage = false)
     {
         $query = $this->createQuery();
+        if ($ignoreSysLanguage) {
+            $query->getQuerySettings()->setRespectSysLanguage(false);
+        }
         $query->matching(
             $query->in('uid', $uids)
         );

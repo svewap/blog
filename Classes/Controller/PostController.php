@@ -187,7 +187,7 @@ class PostController extends ActionController
      */
     public function listByDemandAction(): ResponseInterface
     {
-        $repositoryDemand = $this->postRepositoryDemandFactory->createFromSettings($this->settings['demand'] ?? []);
+        $repositoryDemand = $this->postRepositoryDemandFactory->createFromSettings($this->settings['demand'] ?? [], true);
 
         $this->view->assign('type', 'demand');
         $this->view->assign('demand', $repositoryDemand);
