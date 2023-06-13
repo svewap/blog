@@ -89,6 +89,7 @@ class PostRepository extends Repository
             $languageUid = $context->getPropertyFromAspect('language', 'id');
             if ($languageUid > 0) {
                 $constraints[] = $query->in('l10n_parent', $repositoryDemand->getPosts());
+                $constraints[] = $query->equals('sys_language_uid', $languageUid);
             } else {
                 $constraints[] = $query->in('uid', $repositoryDemand->getPosts());
             }
