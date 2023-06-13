@@ -84,7 +84,15 @@ class PostRepository extends Repository
         ];
 
         if ($repositoryDemand->getPosts() !== []) {
-            $constraints[] = $query->in('uid', $repositoryDemand->getPosts());
+
+            $context = GeneralUtility::makeInstance(Context::class);
+            $languageUid = $context->getPropertyFromAspect('language', 'id');
+            if ($languageUid > 0) {
+                $constraints[] = $query->in('l10n_parent', $repositoryDemand->getPosts());
+            } else {
+                $constraints[] = $query->in('uid', $repositoryDemand->getPosts());
+            }
+
         } else {
             if ($repositoryDemand->getCategories() !== []) {
                 $categoriesConstraints = [];
