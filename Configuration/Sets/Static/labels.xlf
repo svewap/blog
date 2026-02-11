@@ -184,14 +184,30 @@
              <trans-unit id="settings.description.plugin.tx_blog.settings.archiveUid" xml:space="preserve">
                 <source>Location of the "Blog: Archive" plugin. Shows archived posts.</source>
             </trans-unit>
-            <trans-unit id="settings.plugin.tx_blog.settings.storagePid" xml:space="preserve">
-                <source>Storage folder</source>
+            <trans-unit id="settings.plugin.tx_blog.settings.postsPid" xml:space="preserve">
+                <source>Storage folder for posts</source>
             </trans-unit>
-             <trans-unit id="settings.description.plugin.tx_blog.settings.storagePid" xml:space="preserve">
-                <source>Storage folder of all categories and tags for this blog.</source>
+             <trans-unit id="settings.description.plugin.tx_blog.settings.postsPid" xml:space="preserve">
+                <source>Storage folder of all posts, recursive.</source>
             </trans-unit>
-
-
+            <trans-unit id="settings.plugin.tx_blog.settings.categoriesPid" xml:space="preserve">
+                <source>Storage folder for categories</source>
+            </trans-unit>
+             <trans-unit id="settings.description.plugin.tx_blog.settings.categoriesPid" xml:space="preserve">
+                <source>Storage folder of all categories.</source>
+            </trans-unit>
+            <trans-unit id="settings.plugin.tx_blog.settings.tagsPid" xml:space="preserve">
+                <source>Storage folder for tags</source>
+            </trans-unit>
+             <trans-unit id="settings.description.plugin.tx_blog.settings.tagsPid" xml:space="preserve">
+                <source>Storage folder of all tags.</source>
+            </trans-unit>
+            <trans-unit id="settings.plugin.tx_blog.settings.authorsPid" xml:space="preserve">
+                <source>Storage folder for authors</source>
+            </trans-unit>
+             <trans-unit id="settings.description.plugin.tx_blog.settings.authorsPid" xml:space="preserve">
+                <source>Storage folder of all authors.</source>
+            </trans-unit>
 
 
             <trans-unit id="settings.plugin.tx_blog.settings.post.featuredImage.width" xml:space="preserve">

@@ -120,7 +120,22 @@ settings:
     type: page
     default: 0
 
-  plugin.tx_blog.settings.storagePid:
+  plugin.tx_blog.settings.postsPid:
+    category: blog.uids
+    type: page
+    default: 0
+
+  plugin.tx_blog.settings.categoriesPid:
+    category: blog.uids
+    type: page
+    default: 0
+
+  plugin.tx_blog.settings.tagsPid:
+    category: blog.uids
+    type: page
+    default: 0
+
+  plugin.tx_blog.settings.authorsPid:
     category: blog.uids
     type: page
     default: 0

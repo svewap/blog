@@ -10,9 +10,11 @@ declare(strict_types = 1);
 
 namespace T3G\AgencyPack\Blog\Domain\Repository;
 
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
@@ -25,6 +27,14 @@ class TagRepository extends Repository
     {
         $configurationManager = GeneralUtility::makeInstance(ConfigurationManagerInterface::class);
         $this->settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK, 'blog');
+
+        $querySettings = GeneralUtility::makeInstance(
+            Typo3QuerySettings::class,
+            GeneralUtility::makeInstance(Context::class),
+            $configurationManager
+        );
+        $querySettings->setStoragePageIds(GeneralUtility::intExplode(',', (string) $this->settings['settings']['tagsPid']));
+        $this->setDefaultQuerySettings($querySettings);
 
         $this->defaultOrderings = [
             'title' => QueryInterface::ORDER_ASCENDING,
@@ -55,9 +65,9 @@ class TagRepository extends Repository
             ->setMaxResults($limit);
 
         // limitation to storage pid for multi domain purpose
-        if ($this->settings['persistence']['storagePid']) {
+        if ($this->settings['settings']['tagsPid']) {
             // force storage pids as integer
-            $storagePids = GeneralUtility::intExplode(',', $this->settings['persistence']['storagePid']);
+            $storagePids = GeneralUtility::intExplode(',', $this->settings['settings']['tagsPid']);
             $queryBuilder->where('t.pid IN(' . implode(',', $storagePids) . ')');
         }
 
