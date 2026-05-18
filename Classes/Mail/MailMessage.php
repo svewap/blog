@@ -10,6 +10,7 @@ declare(strict_types = 1);
 
 namespace T3G\AgencyPack\Blog\Mail;
 
+use TYPO3\CMS\Core\Mail\MailerInterface;
 use TYPO3\CMS\Core\Mail\MailMessage as CoreMailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -77,6 +78,7 @@ class MailMessage
         $this->mailMessage->setTo($this->getTo());
         $this->mailMessage->html($this->getBody());
 
-        return (bool) $this->mailMessage->send();
+        GeneralUtility::makeInstance(MailerInterface::class)->send($this->mailMessage);
+        return true;
     }
 }
