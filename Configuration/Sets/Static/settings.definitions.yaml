@@ -127,6 +127,16 @@ settings:
     type: page
     default: 0
 
+  # Wird in setup.typoscript als plugin.tx_blog.persistence.storagePid
+  # eingesetzt, war hier aber nie definiert. Ohne Definition bleibt die
+  # Konstante als Text stehen, Extbase findet keinen Ablageort und jede
+  # Beitragsliste ist leer - ohne Fehlermeldung.
+  # Mehrere Ordner sind erlaubt, deshalb string und nicht page.
+  plugin.tx_blog.settings.storagePid:
+    category: blog.uids
+    type: string
+    default: '0'
+
   plugin.tx_blog.settings.categoriesPid:
     category: blog.uids
     type: page
