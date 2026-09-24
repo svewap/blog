@@ -96,6 +96,12 @@
                 <source>Based on the categories and tags of the current post, it will show a list of related posts. This overview should only be placed on a Blog detail page.</source>
             </trans-unit>
 
+            <trans-unit id="pages.featured" xml:space="preserve">
+                <source>Featured post</source>
+            </trans-unit>
+            <trans-unit id="pages.featured.description" xml:space="preserve">
+                <source>Shown above the post list, and left out of that list so it does not appear twice.</source>
+            </trans-unit>
             <trans-unit id="pages.featured_image" xml:space="preserve">
                 <source>Featured Image</source>
             </trans-unit>

@@ -12,6 +12,7 @@ namespace T3G\AgencyPack\Blog\Domain\Repository;
 
 use Psr\Http\Message\ServerRequestInterface;
 use T3G\AgencyPack\Blog\Constants;
+use T3G\AgencyPack\Blog\Service\DisplayedPostsRegistry;
 use T3G\AgencyPack\Blog\DataTransferObject\PostRepositoryDemand;
 use T3G\AgencyPack\Blog\Domain\Model\Author;
 use T3G\AgencyPack\Blog\Domain\Model\Category;
@@ -198,9 +199,43 @@ class PostRepository extends Repository
             $query->greaterThanOrEqual('archiveDate', time())
         );
 
+        // Beitraege, die auf dieser Seite schon ausgegeben wurden, fallen raus.
+        // Betrifft in der Praxis den hervorgehobenen Beitrag ueber der Liste.
+        // Ist nichts registriert, aendert sich an der Abfrage nichts.
+        $displayed = GeneralUtility::makeInstance(DisplayedPostsRegistry::class)->getUids();
+        if ($displayed !== []) {
+            $constraints[] = $query->logicalNot($query->in('uid', $displayed));
+        }
+
         $query->matching($query->logicalAnd(...$constraints));
 
         return $query;
+    }
+
+    /**
+     * Die hervorgehobenen Beitraege, neueste zuerst.
+     *
+     * Gesetzt wird das Kennzeichen in den Seiteneigenschaften des Beitrags
+     * (Reiter "Blog"). Ohne gesetztes Kennzeichen kommt nichts zurueck - der
+     * Aufrufer entscheidet dann selbst, ob er ersatzweise den neuesten Beitrag
+     * nimmt oder den Block weglaesst.
+     */
+    public function findFeatured(int $limit = 1): QueryResultInterface
+    {
+        $query = $this->getFindAllQuery();
+
+        $constraints = [$query->equals('featured', true)];
+        $vorhandene = $query->getConstraint();
+        if ($vorhandene !== null) {
+            $constraints[] = $vorhandene;
+        }
+        $query->matching($query->logicalAnd(...$constraints));
+
+        if ($limit > 0) {
+            $query->setLimit($limit);
+        }
+
+        return $query->execute();
     }
 
     public function findAllByAuthor(Author $author): QueryResultInterface

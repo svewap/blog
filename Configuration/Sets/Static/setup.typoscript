@@ -223,6 +223,9 @@ plugin.tx_blog {
                 dateFormat = {$plugin.tx_blog.settings.lists.posts.dateFormat}
                 layout = {$plugin.tx_blog.settings.lists.posts.layout}
                 showImages = {$plugin.tx_blog.settings.lists.posts.showImages}
+                featured {
+                    enable = {$plugin.tx_blog.settings.lists.posts.featured.enable}
+                }
             }
         }
 

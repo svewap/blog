@@ -30,6 +30,7 @@ class Post extends AbstractEntity
     protected string $subtitle = '';
     protected string $abstract = '';
     protected string $description = '';
+    protected bool $featured = false;
     protected bool $commentsActive = true;
     protected int $tstamp = 0;
     protected int $archiveDate = 0;
@@ -219,6 +220,21 @@ class Post extends AbstractEntity
     {
         $this->crdate = $crdate;
         return $this;
+    }
+
+    public function isFeatured(): bool
+    {
+        return $this->featured;
+    }
+
+    public function getFeatured(): bool
+    {
+        return $this->featured;
+    }
+
+    public function setFeatured(bool $featured): void
+    {
+        $this->featured = $featured;
     }
 
     public function getCommentsActive(): bool

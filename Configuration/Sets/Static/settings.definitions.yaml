@@ -525,6 +525,14 @@ settings:
     type: string
     default: 'default'
 
+  # Stellt den hervorgehobenen Beitrag ueber die Liste. Hervorgehoben wird ein
+  # Beitrag ueber das Kennzeichen in seinen Seiteneigenschaften; er faellt dann
+  # aus der Liste darunter heraus.
+  plugin.tx_blog.settings.lists.posts.featured.enable:
+    category: blog.lists
+    type: bool
+    default: false
+
   plugin.tx_blog.settings.lists.posts.showImages:
     category: blog.lists
     type: bool

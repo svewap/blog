@@ -1,0 +1,19 @@
+<f:variable name="post" value="{featuredPost}" />
+<article class="postlist__featured" data-blog-tag="{f:if(condition: post.tags, then: post.tags.0.uid, else: 0)}" data-blog-category="{f:if(condition: post.categories, then: post.categories.0.uid, else: 0)}">
+    <f:if condition="{post.featuredImage}">
+        <blogvh:link.post post="{post}" class="postlist__featured-image" additionalAttributes="{aria-hidden: 'true'}" tabindex="-1">
+            <f:render partial="General/FeaturedImage" arguments="{image: post.featuredImage, settings: settings.lists.featuredImage}" />
+        </blogvh:link.post>
+    </f:if>
+    <h2 class="postlist__featured-title" itemprop="name"><blogvh:link.post post="{post}" /></h2>
+    <f:render partial="Meta/ListHeader" arguments="{_all}" />
+    <f:if condition="{post.abstract}">
+        <f:then>
+            <p class="postlist__featured-description" itemprop="description">{post.abstract}</p>
+        </f:then>
+        <f:else>
+            <p class="postlist__featured-description" itemprop="description">{post.description}</p>
+        </f:else>
+    </f:if>
+    <f:render partial="Meta/ListFooter" arguments="{_all}" />
+</article>

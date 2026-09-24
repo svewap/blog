@@ -23,6 +23,7 @@ use T3G\AgencyPack\Blog\Domain\Repository\TagRepository;
 use T3G\AgencyPack\Blog\Factory\PostRepositoryDemandFactory;
 use T3G\AgencyPack\Blog\Pagination\BlogPagination;
 use T3G\AgencyPack\Blog\Service\CacheService;
+use T3G\AgencyPack\Blog\Service\DisplayedPostsRegistry;
 use T3G\AgencyPack\Blog\Service\MetaTagService;
 use T3G\AgencyPack\Blog\Utility\ArchiveUtility;
 use T3G\AgencyPack\Blog\Utility\Socials\MastodonUtility;
@@ -42,6 +43,7 @@ class PostController extends ActionController
     protected TagRepository $tagRepository;
     protected CacheService $blogCacheService;
     protected PostRepositoryDemandFactory $postRepositoryDemandFactory;
+    protected DisplayedPostsRegistry $displayedPostsRegistry;
 
     public function __construct(
         PostRepository $postRepository,
@@ -49,7 +51,8 @@ class PostController extends ActionController
         CategoryRepository $categoryRepository,
         TagRepository $tagRepository,
         CacheService $blogCacheService,
-        PostRepositoryDemandFactory $postRepositoryDemandFactory
+        PostRepositoryDemandFactory $postRepositoryDemandFactory,
+        DisplayedPostsRegistry $displayedPostsRegistry
     ) {
         $this->postRepository = $postRepository;
         $this->authorRepository = $authorRepository;
@@ -57,6 +60,7 @@ class PostController extends ActionController
         $this->tagRepository = $tagRepository;
         $this->blogCacheService = $blogCacheService;
         $this->postRepositoryDemandFactory = $postRepositoryDemandFactory;
+        $this->displayedPostsRegistry = $displayedPostsRegistry;
     }
 
     /**
@@ -118,9 +122,21 @@ class PostController extends ActionController
      */
     public function listRecentPostsAction(int $currentPage = 1): ResponseInterface
     {
+        $featuredPost = null;
         if ($this->request->getFormat() === 'rss') {
             $maximumItems = (int) ($this->settings['rss']['maximumDisplayedItems'] ?? 10);
         } else {
+            // Der hervorgehobene Beitrag wird VOR der Liste geholt und registriert.
+            // Dadurch faellt er aus der Liste darunter heraus und steht nicht
+            // zweimal auf der Seite. Die Reihenfolge dieser beiden Zeilen ist der
+            // ganze Mechanismus - wer sie tauscht, bekommt den Beitrag doppelt.
+            if ((bool) ($this->settings['lists']['posts']['featured']['enable'] ?? false)) {
+                $featuredPost = $this->postRepository->findFeatured(1)->getFirst();
+                if ($featuredPost instanceof Post) {
+                    $this->displayedPostsRegistry->register((int) $featuredPost->getUid());
+                }
+            }
+
             $maximumItems = (int) ($this->settings['lists']['posts']['maximumDisplayedItems'] ?? 0);
         }
         $posts = (0 === $maximumItems)
@@ -131,6 +147,7 @@ class PostController extends ActionController
         }
 
         $this->view->assign('type', 'recent');
+        $this->view->assign('featuredPost', $featuredPost);
         $this->view->assign('posts', $posts);
         $this->view->assign('pagination', $pagination ?? null);
         return $this->htmlResponse();

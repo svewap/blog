@@ -1,5 +1,10 @@
 <div class="postlist{f:if(condition: type, then: ' postlist--{type}')}{f:if(condition: settings.lists.posts.layout, then: ' postlist--layout-{settings.lists.posts.layout -> f:format.htmlspecialchars()}')}">
 
+    <f:if condition="{featuredPost}">
+        <blogvh:cache post="{featuredPost}" />
+        <f:render partial="List/Featured" arguments="{_all}" />
+    </f:if>
+
     <f:if condition="{pagination} && {pagination.paginatedItems}">
         <f:then>
 
