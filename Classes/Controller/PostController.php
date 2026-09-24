@@ -130,7 +130,10 @@ class PostController extends ActionController
             // Dadurch faellt er aus der Liste darunter heraus und steht nicht
             // zweimal auf der Seite. Die Reihenfolge dieser beiden Zeilen ist der
             // ganze Mechanismus - wer sie tauscht, bekommt den Beitrag doppelt.
-            if ((bool) ($this->settings['lists']['posts']['featured']['enable'] ?? false)) {
+            // Nur auf der ersten Seite. Sonst stuende der hervorgehobene Beitrag
+            // ueber jeder Blaetterseite - beim Weiterblaettern will man aber
+            // weiterlesen, nicht dieselbe Empfehlung noch einmal sehen.
+            if ($currentPage === 1 && (bool) ($this->settings['lists']['posts']['featured']['enable'] ?? false)) {
                 $featuredPost = $this->postRepository->findFeatured(1)->getFirst();
                 if ($featuredPost instanceof Post) {
                     $this->displayedPostsRegistry->register((int) $featuredPost->getUid());
